@@ -6,8 +6,7 @@
 //
 import Foundation
 
-// Define a struct to represent the data
-public struct StockData: Decodable {
+public struct Quote: Decodable {
 //    public let id = UUID()
     
     public let date: String
@@ -30,7 +29,6 @@ public struct StockData: Decodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-//        let dataContainer = try container.nestedUnkeyedContainer()
         
         date = try container.decode(String.self)
         openPrice = try container.decode(Int.self)
@@ -39,28 +37,26 @@ public struct StockData: Decodable {
         closePrice = try container.decode(Int.self)
         volume = try container.decode(Int.self)
         foreignHoldingRate = try container.decode(Double.self)
-
-//        self.init(date: date, openPrice: openPrice, highPrice: highPrice, lowPrice: lowPrice, closePrice: closePrice, volume: volume, foreignHoldingRate: foreignHoldingRate)
     }
 }
 
 
-public struct StockDataList: Decodable {
-    public let stockDatas: [StockData]
-    public let error: APIError
+public struct QuoteResponse: Decodable {
+    public let datas: [Quote]
+    public let error: ErrorResponse?
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         // Skip the header row
         _ = try container.decode([String].self)
         
-        var stockDataItems = [StockData]()
+        var quotes = [Quote]()
         while !container.isAtEnd {
-            let data = try container.decode(StockData.self)
-            stockDataItems.append(data)
+            let quote = try container.decode(Quote.self)
+            quotes.append(quote)
         }
         
-        self.stockDatas = stockDataItems
+        self.datas = quotes
         self.error = nil
     }
 }

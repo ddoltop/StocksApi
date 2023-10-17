@@ -5,17 +5,20 @@ import PackageDescription
 
 let package = Package(
     name: "StocksApi",
+    platforms: [
+        .iOS(.v13), .macOS(.v12), .tvOS(.v13), .watchOS(.v8)
+    ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "StocksApi",
             targets: ["StocksApi"]),
+        .executable(name: "StocksApiExec", targets: ["StocksApiExec"])
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "StocksApi"),
+        .executableTarget(name: "StocksApiExec",
+                         dependencies: ["StocksApi"]),
         .testTarget(
             name: "StocksApiTests",
             dependencies: ["StocksApi"]),
