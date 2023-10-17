@@ -18,7 +18,7 @@ public struct StocksApi {
         
     }
     
-    public func fetchStockData(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [StockData] {
+    public func fetchQuote(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Quote] {
 //        guard var urlComponents = URLComponents(stirng: "\(baseURL)/sideJon.naver") else {
 //            throw APIError.invalidURL
 //        }
@@ -41,31 +41,47 @@ public struct StocksApi {
             throw APIError.invalidURL
         }
 
-        let (response, statusCode): (StockDataList, Int) = try await fetch(url: url)
+        let (response, statusCode): (QuoteResponse, Int) = try await fetch(url: url, shouldReplace: true, from: "'", to: "\"")
         if let error = response.error {
             throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
         }
-        return response.stockDatas
+        return response.datas
 
     }
     
     private func fetch<D: Decodable>(url: URL, shouldReplace: Bool = false, from: String = "", to: String = "") async throws -> (D, Int) {
         let (data, res) = try await session.data(from: url)
         let statusCode = try validateHTTPResponseCode(res)
-        if shouldReplace {
-            guard let stringData = String(data: data, encoding: .utf8) else {
-//                return [], statusCode
-                throws APIError.parseError
+//        if shouldReplace {
+//            guard let stringData = String(data: data, encoding: .utf8) else {
+//                throw APIError.parseError
+//            }
+//            let jsonString = stringData.replacingOccurrences(of: from, with: to)
+//
+//            guard let jsonData = jsonString.data(using: .utf8) else {
+//                throw APIError.parseError
+//            }
+//            return (try jsonDecoder.decode(D.self, from: jsonData), statusCode)
+//
+//        }
+//        return (try jsonDecoder.decode(D.self, from: data), statusCode)
+        
+        let targetData = shouldReplace ? try {
+            let stringData = String(data: data, encoding: .utf8)
+            let jsonString = stringData?.replacingOccurrences(of: from, with: to)
+            if let jsonData = jsonString?.data(using: .utf8) {
+                return jsonData
+            } else {
+                throw APIError.parseError
             }
-            let jsonString = stringData.replacingOccurrences(of: from, with: to)
+        }() : data
 
-            guard let jsonData = jsonString.data(using: .utf8) else {
-                throws APIError.parseError
-            }
-            return (try jsonDecoder.decode(D.self, from: jsonData), statusCode)
+//        guard let validData = targetData else {
+//            throw APIError.parseError
+//        }
 
-        }
-        return (try jsonDecoder.decode(D.self, from: data), statusCode)
+        return (try jsonDecoder.decode(D.self, from: targetData), statusCode)
+
     }
     
     private func validateHTTPResponseCode(_ response: URLResponse) throws -> Int {
