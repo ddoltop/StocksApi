@@ -15,11 +15,11 @@ struct StocksApiExec {
     
     static func main() async {
 //        await getQuoteDatas()
-//        await apiQuoteDatas()
+        await apiQuoteDatas()
 
         
 //        await searchCompany()
-        await apiCompanyDatas()
+//        await apiCompanyDatas()
     }
     
     static func apiQuoteDatas() async {

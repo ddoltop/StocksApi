@@ -36,10 +36,12 @@ public struct StocksApi {
     
     public func fetchQuote(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Quote] {
         var urlComponents = URLComponents(scheme: "https", host: "api.finance.naver.com", path: "/siseJson.naver")
-
+        // https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20230901&endTime=20231013&timeframe=day
+        // https://api.finance.naver.com/siseJson.naver?symbol=005930&startTime=20230901&endTime=20230913&timeframe=day"
         // Set the query items for the URL
         urlComponents.queryItems = [
             .init(name: "symbol", value: symbol),
+            .init(name: "requestType", value: String(1)),
             .init(name: "startTime", value: startTime),
             .init(name: "endTime", value: endTime),
             .init(name: "timeframe", value: timeframe),
@@ -62,6 +64,7 @@ public struct StocksApi {
         
         let targetData = shouldReplace ? try {
             let stringData = String(data: data, encoding: .utf8)
+            print(stringData)
             let jsonString = stringData?.replacingOccurrences(of: from, with: to)
             if let jsonData = jsonString?.data(using: .utf8) {
                 return jsonData
