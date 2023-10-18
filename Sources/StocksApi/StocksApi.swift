@@ -19,18 +19,16 @@ public struct StocksApi {
     
     public func searchCompany(query: String, isEquityTypeOnly: Bool = false) async throws -> [Company] {
         // "https://ac.stock.naver.com/ac?q=sk&target=index%2Cstock%2Cmarketindicator")!)
-        var urlComponents = URLComponents(scheme: "https", host: "ac.stock.naver.com", path: "/ac")
+        var components = URLComponents(scheme: "https", host: "ac.stock.naver.com", path: "/ac")
         
-        urlComponents.percentEncodedQuery = "q=\(query)&target=index%2Cstock%2Cmarketindicator"
+        components.percentEncodedQuery = "q=\(query)&target=index%2Cstock%2Cmarketindicator"
 
-        guard let url = urlComponents.url else {
-            print("url error")
+        guard let url = components.url else {
             throw APIError.invalidURL
         }
 
         let (response, statusCode): (CompanyResponse, Int) = try await fetch(url: url)
         if let error = response.error {
-            print("error : \(error)")
             throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
         }
         return response.items
@@ -39,23 +37,19 @@ public struct StocksApi {
     public func fetchQuote(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Quote] {
         var urlComponents = URLComponents(scheme: "https", host: "api.finance.naver.com", path: "/siseJson.naver")
 
-        // Create query items
-        let symbolQuery = URLQueryItem(name: "symbol", value: symbol)
-        let requestTypeQuery = URLQueryItem(name: "requestType", value: String(1))
-        let startTimeQuery = URLQueryItem(name: "startTime", value: startTime)
-        let endTimeQuery = URLQueryItem(name: "endTime", value: endTime)
-        let timeframeQuery = URLQueryItem(name: "timeframe", value: timeframe)
-
         // Set the query items for the URL
-        urlComponents.queryItems = [symbolQuery, requestTypeQuery, startTimeQuery, endTimeQuery, timeframeQuery]
+        urlComponents.queryItems = [
+            .init(name: "symbol", value: symbol),
+            .init(name: "startTime", value: startTime),
+            .init(name: "endTime", value: endTime),
+            .init(name: "timeframe", value: timeframe),
+        ]
         guard let url = urlComponents.url else {
-            print("url error")
             throw APIError.invalidURL
         }
 
         let (response, statusCode): (QuoteResponse, Int) = try await fetch(url: url, shouldReplace: true, "'", "\"")
         if let error = response.error {
-            print("error : \(error)")
             throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
         }
         return response.datas
