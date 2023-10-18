@@ -64,7 +64,6 @@ public struct StocksApi {
         
         let targetData = shouldReplace ? try {
             let stringData = String(data: data, encoding: .utf8)
-            print(stringData)
             let jsonString = stringData?.replacingOccurrences(of: from, with: to)
             if let jsonData = jsonString?.data(using: .utf8) {
                 return jsonData
