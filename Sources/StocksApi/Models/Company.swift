@@ -9,8 +9,9 @@ import Foundation
 
 
 public struct CompanyResponse: Codable {
-    public let query: String
-    public let items: [Company]
+    public let query: String //do not change
+    public let items: [Company] //do not change
+    public let error: ErrorResponse?
 }
 
 

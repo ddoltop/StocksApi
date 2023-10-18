@@ -15,18 +15,29 @@ public struct StocksApi {
     
     public init() {
         
+    }
+    
+    public func searchCompany(query: String, isEquityTypeOnly: Bool = false) async throws -> [Company] {
+        // "https://ac.stock.naver.com/ac?q=sk&target=index%2Cstock%2Cmarketindicator")!)
+        var urlComponents = URLComponents(scheme: "https", host: "ac.stock.naver.com", path: "/ac")
         
+        urlComponents.percentEncodedQuery = "q=\(query)&target=index%2Cstock%2Cmarketindicator"
+
+        guard let url = urlComponents.url else {
+            print("url error")
+            throw APIError.invalidURL
+        }
+
+        let (response, statusCode): (CompanyResponse, Int) = try await fetch(url: url)
+        if let error = response.error {
+            print("error : \(error)")
+            throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
+        }
+        return response.items
     }
     
     public func fetchQuote(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Quote] {
-//        guard var urlComponents = URLComponents(stirng: "\(baseURL)/sideJon.naver") else {
-//            throw APIError.invalidURL
-//        }
-        
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = baseHost
-        urlComponents.path = "/siseJson.naver"
+        var urlComponents = URLComponents(scheme: "https", host: "api.finance.naver.com", path: "/siseJson.naver")
 
         // Create query items
         let symbolQuery = URLQueryItem(name: "symbol", value: symbol)
@@ -38,33 +49,22 @@ public struct StocksApi {
         // Set the query items for the URL
         urlComponents.queryItems = [symbolQuery, requestTypeQuery, startTimeQuery, endTimeQuery, timeframeQuery]
         guard let url = urlComponents.url else {
+            print("url error")
             throw APIError.invalidURL
         }
 
-        let (response, statusCode): (QuoteResponse, Int) = try await fetch(url: url, shouldReplace: true, from: "'", to: "\"")
+        let (response, statusCode): (QuoteResponse, Int) = try await fetch(url: url, shouldReplace: true, "'", "\"")
         if let error = response.error {
+            print("error : \(error)")
             throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
         }
         return response.datas
 
     }
     
-    private func fetch<D: Decodable>(url: URL, shouldReplace: Bool = false, from: String = "", to: String = "") async throws -> (D, Int) {
+    private func fetch<D: Decodable>(url: URL, shouldReplace: Bool = false, _ from: String = "", _ to: String = "") async throws -> (D, Int) {
         let (data, res) = try await session.data(from: url)
         let statusCode = try validateHTTPResponseCode(res)
-//        if shouldReplace {
-//            guard let stringData = String(data: data, encoding: .utf8) else {
-//                throw APIError.parseError
-//            }
-//            let jsonString = stringData.replacingOccurrences(of: from, with: to)
-//
-//            guard let jsonData = jsonString.data(using: .utf8) else {
-//                throw APIError.parseError
-//            }
-//            return (try jsonDecoder.decode(D.self, from: jsonData), statusCode)
-//
-//        }
-//        return (try jsonDecoder.decode(D.self, from: data), statusCode)
         
         let targetData = shouldReplace ? try {
             let stringData = String(data: data, encoding: .utf8)
@@ -75,10 +75,6 @@ public struct StocksApi {
                 throw APIError.parseError
             }
         }() : data
-
-//        guard let validData = targetData else {
-//            throw APIError.parseError
-//        }
 
         return (try jsonDecoder.decode(D.self, from: targetData), statusCode)
 
@@ -97,4 +93,20 @@ public struct StocksApi {
     
 }
 
+extension URLComponents {
+    
+    init(scheme: String, host: String, path: String) {
+        self.init()
+        self.scheme = scheme
+        self.host = host
+        self.path = path
+    }
 
+    init(scheme: String, host: String, path: String, queryItems: [URLQueryItem]?) {
+        self.init()
+        self.scheme = scheme
+        self.host = host
+        self.path = path
+        self.queryItems = queryItems
+    }
+}
