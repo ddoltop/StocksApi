@@ -8,14 +8,14 @@
 import Foundation
 
 
-public struct CompanyResponse: Codable {
+public struct TickerResponse: Codable {
     public let query: String //do not change
-    public let items: [Company] //do not change
+    public let items: [Ticker] //do not change
     public let error: ErrorResponse?
 }
 
 
-public struct Company: Codable, Identifiable, Hashable, Equatable {
+public struct Ticker: Codable, Identifiable, Hashable, Equatable {
     
 //    public let id = UUID()
     

@@ -65,7 +65,7 @@ struct StocksApiExec {
 //                print(stringData)
 //            }
 
-            let compines = try JSONDecoder().decode(CompanyResponse.self, from: searchData)
+            let compines = try JSONDecoder().decode(TickerResponse.self, from: searchData)
             print(compines.items)
         } catch let error {
             print("Search error: \(error)")

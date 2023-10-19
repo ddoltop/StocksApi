@@ -17,7 +17,7 @@ public struct StocksApi {
         
     }
     
-    public func searchCompany(query: String, isEquityTypeOnly: Bool = false) async throws -> [Company] {
+    public func searchCompany(query: String, isEquityTypeOnly: Bool = false) async throws -> [Ticker] {
         // "https://ac.stock.naver.com/ac?q=sk&target=index%2Cstock%2Cmarketindicator")!)
         var components = URLComponents(scheme: "https", host: "ac.stock.naver.com", path: "/ac")
         
@@ -27,7 +27,7 @@ public struct StocksApi {
             throw APIError.invalidURL
         }
 
-        let (response, statusCode): (CompanyResponse, Int) = try await fetch(url: url)
+        let (response, statusCode): (TickerResponse, Int) = try await fetch(url: url)
         if let error = response.error {
             throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
         }
@@ -63,9 +63,9 @@ public struct StocksApi {
         let statusCode = try validateHTTPResponseCode(res)
         
         let targetData = shouldReplace ? try {
-            let stringData = String(data: data, encoding: .utf8)
-            let jsonString = stringData?.replacingOccurrences(of: from, with: to)
-            if let jsonData = jsonString?.data(using: .utf8) {
+            let stringData = String(data: data, encoding: .utf8) ?? ""
+            let jsonString = stringData.replacingOccurrences(of: from, with: to)
+            if let jsonData = jsonString.data(using: .utf8) {
                 return jsonData
             } else {
                 throw APIError.parseError
