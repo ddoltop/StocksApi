@@ -86,7 +86,8 @@ public struct Quote: Decodable {
     public var id: String {
         cd
     }
-    public init(cd: String, nm: String?, sv: Int?, nv: Int?, cv: Int?, cr: Double?, rf: String?, mt: String?, ms: String?, tyn: String?, pcv: Int?, ov: Int?, hv: Int?, lv: Int?, ul: Int?, ll: Int?, aq: Int?, aa: Double?, nav: Int?, keps: Int?, eps: Int?, bps: Double?, cnsEps: Int?, dv: Double?) {
+    
+    public init(cd: String, nm: String? = nil, sv: Int? = nil, nv: Int? = nil, cv: Int? = nil, cr: Double? = nil, rf: String? = nil, mt: String? = nil, ms: String? = nil, tyn: String? = nil, pcv: Int? = nil, ov: Int? = nil, hv: Int? = nil, lv: Int? = nil, ul: Int? = nil, ll: Int? = nil, aq: Int? = nil, aa: Double? = nil, nav: Int? = nil, keps: Int? = nil, eps: Int? = nil, bps: Double? = nil, cnsEps: Int? = nil, dv: Double? = nil) {
         self.cd = cd
         self.nm = nm
         self.sv = sv
