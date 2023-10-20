@@ -34,7 +34,53 @@ public struct StocksApi {
         return response.items
     }
     
-    public func fetchQuote(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Quote] {
+    public func testfetchQuote(stringData: String) async throws {
+        guard let jsonData = stringData.data(using: .utf8) else {
+            fatalError("Failed to convert string to data")
+        }
+        
+        let decoder = JSONDecoder()
+        do {
+            let response = try decoder.decode(QuoteResponse.self, from: jsonData)
+            switch response {
+            case .success(let data):
+                print("Success: \(data)")
+            case .error(let errorData):
+                print("Error: \(errorData)")
+            }
+        } catch let error {
+            print("Decoding error: \(error)")
+        }
+    }
+
+    
+    public func fetchQuote(symbol: String) async throws -> [Quote] {
+        // https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:031510,005930
+        var urlComponents = URLComponents(scheme: "https", host: "polling.finance.naver.com", path: "/api/realtime")
+        urlComponents.queryItems = [
+            .init(name: "query", value: "SERVICE_ITEM:\(symbol)")
+        ]
+        guard let url = urlComponents.url else {
+            throw APIError.invalidURL
+        }
+
+        do {
+            let (response, statusCode): (QuoteResponse, Int) = try await fetch(url: url,shouldReplace: true)
+            switch response {
+            case .success(let data):
+//                print("Success: \(data)")
+                return data.result.areas[0].datas
+            case .error(let errorData):
+                print("Error: \(errorData)")
+                throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: ErrorResponse(error: errorData.error, message: errorData.message))
+            }
+        } catch let error {
+            print("Decoding error: \(error)")
+            throw APIError.parseError
+        }
+    }
+    
+    public func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Trade] {
         var urlComponents = URLComponents(scheme: "https", host: "api.finance.naver.com", path: "/siseJson.naver")
         // https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20230901&endTime=20231013&timeframe=day
         // https://api.finance.naver.com/siseJson.naver?symbol=005930&startTime=20230901&endTime=20230913&timeframe=day"
@@ -50,20 +96,27 @@ public struct StocksApi {
             throw APIError.invalidURL
         }
 
-        let (response, statusCode): (QuoteResponse, Int) = try await fetch(url: url, shouldReplace: true, "'", "\"")
+        let (response, statusCode): (TradeResponse, Int) = try await fetch(url: url, shouldReplace: true, "'", "\"")
         if let error = response.error {
             throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
         }
         return response.datas
 
     }
-    
     private func fetch<D: Decodable>(url: URL, shouldReplace: Bool = false, _ from: String = "", _ to: String = "") async throws -> (D, Int) {
         let (data, res) = try await session.data(from: url)
         let statusCode = try validateHTTPResponseCode(res)
         
         let targetData = shouldReplace ? try {
-            let stringData = String(data: data, encoding: .utf8) ?? ""
+            
+            let eucKR = CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.EUC_KR.rawValue))
+
+            guard let stringData = String(data: data, encoding: String.Encoding(rawValue: eucKR)) else {
+                print("Failed to convert data to EUC-KR string.")
+                throw APIError.parseError
+            }
+
+//            let stringData = String(bytes: data, encoding: .utf8) ?? ""
             let jsonString = stringData.replacingOccurrences(of: from, with: to)
             if let jsonData = jsonString.data(using: .utf8) {
                 return jsonData
@@ -72,7 +125,7 @@ public struct StocksApi {
             }
         }() : data
 
-        return (try jsonDecoder.decode(D.self, from: targetData), statusCode)
+        return (try JSONDecoder().decode(D.self, from: targetData), statusCode)
 
     }
     

@@ -1,79 +1,115 @@
 //
 //  File.swift
-//  
 //
-//  Created by Jongmok Park on 10/13/23.
 //
+//  Created by Jongmok Park on 10/19/23.
+//
+
 import Foundation
 
-public struct Quote: Decodable {
-//    public let id = UUID()
-    
-    public let date: String
-    public let openPrice: Int
-    public let highPrice: Int
-    public let lowPrice: Int
-    public let closePrice: Int
-    public let volume: Int
-    public let foreignHoldingRate: Double
+enum QuoteResponse: Decodable {
+    case success(SuccessResponse)
+    case error(ErrResponse)
 
-    enum CodingKeys: Int, CodingKey {
-        case date = 0
-        case openPrice = 1
-        case highPrice = 2
-        case lowPrice = 3
-        case closePrice = 4
-        case volume = 5
-        case foreignHoldingRate = 6
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        
-        date = try container.decode(String.self)
-        openPrice = try container.decode(Int.self)
-        highPrice = try container.decode(Int.self)
-        lowPrice = try container.decode(Int.self)
-        closePrice = try container.decode(Int.self)
-        volume = try container.decode(Int.self)
-        foreignHoldingRate = try container.decode(Double.self)
-    }
-}
-
-
-public struct QuoteResponse: Decodable {
-    public let datas: [Quote]
-    public let error: ErrorResponse?
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        // Skip the header row
-        _ = try container.decode([String].self)
-        
-        var quotes = [Quote]()
-        while !container.isAtEnd {
-            let quote = try container.decode(Quote.self)
-            quotes.append(quote)
+    init(from decoder: Decoder) throws {
+        // Try to decode as SuccessResponse
+        if let successResponse = try? SuccessResponse(from: decoder) {
+            self = .success(successResponse)
+            return
         }
-        
-        self.datas = quotes
-        self.error = nil
+
+        // Try to decode as ErrorResponse
+        if let errorResponse = try? ErrResponse(from: decoder) {
+            self = .error(errorResponse)
+            return
+        }
+
+        throw DecodingError.dataCorrupted(
+            .init(
+                codingPath: decoder.codingPath,
+                debugDescription: "Data doesn't match any known format")
+        )
     }
 }
 
+struct SuccessResponse: Decodable {
+    let resultCode: String
+    let result: ResultData
+}
 
+struct ErrResponse: Decodable {
+    let timestamp: String
+    let status: Int
+    let error: String
+    let message: String
+    let path: String
+}
 
-//
-//// Sample JSON
-//let jsonString = """
-//[
-//    ["날짜", "시가", "고가", "저가", "종가", "거래량", "외국인소진율"],
-//    ["20230102", 55500, 56100, 55200, 55500, 10031448, 49.67],
-//    // ... rest of the data
-//]
-//"""
-//
+struct ResultData: Decodable {
+    let pollingInterval: Int
+    let areas: [Area]
+    let time: Int64
+}
 
-//let jsonData = jsonString.data(using: .utf8)!
-//let stockDataList = try! JSONDecoder().decode(StockDataList.self, from: jsonData)
-//let stockDatas = stockDataList.stockDatas
+struct Area: Decodable {
+    let name: String
+    let datas: [Quote]
+}
+
+public struct Quote: Decodable {
+    
+    public let cd: String //code
+    public let nm: String? // 회사명
+    public let sv: Int? //전일
+    public let nv: Int? //현재가
+    public let cv: Int? //전일대비  > 0
+    public let cr: Double? //등락률 > 0
+    public let rf: String?  //? "5"
+    public let mt: String? //삼성 "1" 오스템 "2"
+    public let ms: String? //"CLOSE"
+    public let tyn: String? // "N"
+    public let pcv: Int? //전일가
+    public let ov: Int? //시가
+    public let hv: Int? //고가
+    public let lv: Int? //저가
+    public let ul: Int? //상한가
+    public let ll: Int? //하한가
+    public let aq: Int? //거래량
+    public let aa: Double? //거래대금
+    public let nav: Int? // null
+    public let keps: Int?
+    public let eps: Int? //eps 원
+    public let bps: Double? //bps 원
+    public let cnsEps: Int? //Estimated Earnings Per Share? (Projected or analyst's estimated EPS for future, but this is a guess)
+    public let dv: Double? //Dividend (금액 in won. Amount paid to shareholders from the company's earnings)
+    
+    public var id: String {
+        cd
+    }
+    public init(cd: String, nm: String?, sv: Int?, nv: Int?, cv: Int?, cr: Double?, rf: String?, mt: String?, ms: String?, tyn: String?, pcv: Int?, ov: Int?, hv: Int?, lv: Int?, ul: Int?, ll: Int?, aq: Int?, aa: Double?, nav: Int?, keps: Int?, eps: Int?, bps: Double?, cnsEps: Int?, dv: Double?) {
+        self.cd = cd
+        self.nm = nm
+        self.sv = sv
+        self.nv = nv
+        self.cv = cv
+        self.cr = cr
+        self.rf = rf
+        self.mt = mt
+        self.ms = ms
+        self.tyn = tyn
+        self.pcv = pcv
+        self.ov = ov
+        self.hv = hv
+        self.lv = lv
+        self.ul = ul
+        self.ll = ll
+        self.aq = aq
+        self.aa = aa
+        self.nav = nav
+        self.keps = keps
+        self.eps = eps
+        self.bps = bps
+        self.cnsEps = cnsEps
+        self.dv = dv
+    }
+}

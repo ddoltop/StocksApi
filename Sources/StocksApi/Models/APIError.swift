@@ -35,7 +35,7 @@ public enum APIError: CustomNSError {
             text = "Invalid response type"
         case let .httpStatusCodeFailed(statusCode, error):
             if let error = error {
-                text = "Error: Status Code: \(statusCode), message: \(error.description)"
+                text = "Error: Status Code: \(statusCode), error: \(error.error), message: \(error.message)"
             } else {
                 text = "Error: Status Code: \(statusCode)"
             }
