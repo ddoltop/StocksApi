@@ -106,26 +106,37 @@ public struct StocksApi {
     private func fetch<D: Decodable>(url: URL, shouldReplace: Bool = false, _ from: String = "", _ to: String = "") async throws -> (D, Int) {
         let (data, res) = try await session.data(from: url)
         let statusCode = try validateHTTPResponseCode(res)
+                
+        if let httpResponse = res as? HTTPURLResponse,
+           let contentType = httpResponse.allHeaderFields["Content-Type"] as? String {
+            if contentType.uppercased().contains("EUC-KR") {
+                let eucKR = CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.EUC_KR.rawValue))
+                
+                guard let str = String(data: data, encoding: String.Encoding(rawValue: eucKR)) else {
+                    print("Failed to convert data to EUC-KR string.")
+                    throw APIError.parseError
+                }
+                guard  let data = str.data(using: .utf8) else {
+                    throw APIError.parseError
+                }
+                return (try JSONDecoder().decode(D.self, from: data), statusCode)
+            }
+        }
         
-        let targetData = shouldReplace ? try {
-            
-            let eucKR = CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.EUC_KR.rawValue))
-
-            guard let stringData = String(data: data, encoding: String.Encoding(rawValue: eucKR)) else {
-                print("Failed to convert data to EUC-KR string.")
+        if shouldReplace {
+            guard let stringData = String(data: data, encoding: .utf8) else {
+                throw APIError.parseError
+            }
+            // convert '' to ""
+            let str = stringData.replacingOccurrences(of: from, with: to)
+            guard  let data = str.data(using: .utf8) else {
                 throw APIError.parseError
             }
 
-//            let stringData = String(bytes: data, encoding: .utf8) ?? ""
-            let jsonString = stringData.replacingOccurrences(of: from, with: to)
-            if let jsonData = jsonString.data(using: .utf8) {
-                return jsonData
-            } else {
-                throw APIError.parseError
-            }
-        }() : data
+            return (try JSONDecoder().decode(D.self, from: data), statusCode)
+        }
 
-        return (try JSONDecoder().decode(D.self, from: targetData), statusCode)
+        return (try JSONDecoder().decode(D.self, from: data), statusCode)
 
     }
     
