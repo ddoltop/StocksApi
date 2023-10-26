@@ -16,13 +16,14 @@ struct StocksApiExec {
     static func main() async {
 //        await getQuoteDatas()
 //        await testQuoteDatas()
-        await apiQuoteDatas()
+//        await apiQuoteDatas() // 회사 종합정보 복수가능
 
-        
-//        await searchCompany()
+        await apiTradeDatas() //거래 데이타 개별 검색
+//        await searchCompany() // 회사검색용 복수 검색
 //        await apiCompanyDatas()
     }
     
+    //parsing test  euc-kr encoding problem
     static func testQuoteDatas() async {
         
         let stringData = "{\"resultCode\":\"success\",\"result\":{\"pollingInterval\":70000,\"areas\":[{\"name\":\"SERVICE_ITEM\",\"datas\":[{\"cd\":\"005930\",\"nm\":\"삼성전자\",\"sv\":70500,\"nv\":69500,\"cv\":1000,\"cr\":1.42,\"rf\":\"5\",\"mt\":\"1\",\"ms\":\"CLOSE\",\"tyn\":\"N\",\"pcv\":70500,\"ov\":69700,\"hv\":70000,\"lv\":69400,\"ul\":91600,\"ll\":49400,\"aq\":13058271,\"aa\":909048000000,\"nav\":null,\"keps\":8057,\"eps\":5240,\"bps\":51385.16247,\"cnsEps\":1264,\"dv\":1444.00000}]}],\"time\":1697717453363}}"
@@ -35,15 +36,17 @@ struct StocksApiExec {
 
     }
     
+    //여러코드입력 -> 회사 종합정보
     static func apiQuoteDatas() async {
         do {
-            let quotes = try await stocksApi.fetchQuote(symbol: "005930")
+            let quotes = try await stocksApi.fetchQuotes(symbols: "005930")
             print(quotes)
         } catch {
             print(error.localizedDescription)
         }
     }
 
+    //단일코드 거래내역
     static func apiTradeDatas() async {
         do {
             let quotes = try await stocksApi.fetchTrade(symbol: "005930", startTime: "20230901", endTime: "20230913", timeframe: "day")
@@ -54,15 +57,6 @@ struct StocksApiExec {
     }
     
 
-    static func apiCompanyDatas() async {
-        do {
-            let companies = try await stocksApi.searchCompany(query: "sk")
-            print(companies)
-        } catch {
-            print(error.localizedDescription)
-        }
-    }
-    
     static func getTradeDatas() async {
         let (result, _) = try! await URLSession.shared.data(from: URL(string: "https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20231010&endTime=20231013&timeframe=day")!)
         
@@ -80,7 +74,8 @@ struct StocksApiExec {
         
     }
     
-    static func searchCompany() async {
+    // 이름으로 회사찾기
+    static func searchTickers() async {
         do {
             let (searchData, _) = try await URLSession.shared.data(from: URL(string: "https://ac.stock.naver.com/ac?q=sk&target=index%2Cstock%2Cmarketindicator")!)
 //            if let stringData = String(data: searchData, encoding: .utf8) {
@@ -94,5 +89,15 @@ struct StocksApiExec {
             print("Search error: \(error)")
         }
     }
+
+    static func apiTickers() async {
+        do {
+            let companies = try await stocksApi.searchTickers(query: "sk")
+            print(companies)
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
     
+
 }

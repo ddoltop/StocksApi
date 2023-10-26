@@ -3,7 +3,16 @@
 
 import Foundation
 
-public struct StocksApi {
+public protocol IStockApi {
+//    func fetchChartData(tickerSymbol: String, range: ChartRange) async throws -> ChartData?   //Trade
+//    func fetchChartRawData(symbol: String, range: ChartRange) async throws -> (Data, URLResponse) //
+//    func searchTickers(query: String, isEquityTypeOnly: Bool) async throws -> [Ticker]  //Search Company
+//    func searchTickersRawData(symbols: String, isEquityTypeOnly: Bool) async throws -> (Data, URLResponse)
+    func fetchQuotes(symbols: String) async throws -> [Quote] // Company Information
+//    func fetchQuotesRawData(code: String) async throws -> (Data, URLResponse)
+}
+
+public struct StocksApi: IStockApi {
     private let session = URLSession.shared
     private let jsonDecoder = {
         let decode = JSONDecoder()
@@ -11,13 +20,11 @@ public struct StocksApi {
         return decode
     }()
     
+    
+    public init() { }
+    
     private let baseHost = "api.finance.naver.com"
-    
-    public init() {
-        
-    }
-    
-    public func searchCompany(query: String, isEquityTypeOnly: Bool = false) async throws -> [Ticker] {
+    public func searchTickers(query: String, isEquityTypeOnly: Bool = false) async throws -> [Ticker] {
         // "https://ac.stock.naver.com/ac?q=sk&target=index%2Cstock%2Cmarketindicator")!)
         var components = URLComponents(scheme: "https", host: "ac.stock.naver.com", path: "/ac")
         
@@ -34,6 +41,7 @@ public struct StocksApi {
         return response.items
     }
     
+    //for test only
     public func testfetchQuote(stringData: String) async throws {
         guard let jsonData = stringData.data(using: .utf8) else {
             fatalError("Failed to convert string to data")
@@ -54,11 +62,11 @@ public struct StocksApi {
     }
 
     
-    public func fetchQuote(symbol: String) async throws -> [Quote] {
+    public func fetchQuotes(symbols: String) async throws -> [Quote] {
         // https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:031510,005930
         var urlComponents = URLComponents(scheme: "https", host: "polling.finance.naver.com", path: "/api/realtime")
         urlComponents.queryItems = [
-            .init(name: "query", value: "SERVICE_ITEM:\(symbol)")
+            .init(name: "query", value: "SERVICE_ITEM:\(symbols)")
         ]
         guard let url = urlComponents.url else {
             throw APIError.invalidURL
