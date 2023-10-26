@@ -25,12 +25,9 @@ public struct StocksApi: IStockApi {
     
     private let baseHost = "api.finance.naver.com"
     public func searchTickers(query: String, isEquityTypeOnly: Bool = false) async throws -> [Ticker] {
-        // "https://ac.stock.naver.com/ac?q=sk&target=index%2Cstock%2Cmarketindicator")!)
-        var components = URLComponents(scheme: "https", host: "ac.stock.naver.com", path: "/ac")
-        
-        components.percentEncodedQuery = "q=\(query)&target=index%2Cstock%2Cmarketindicator"
-
-        guard let url = components.url else {
+        let baseURL = "https://ac.stock.naver.com/ac"
+        guard let url = URL.constructURL(baseURL: baseURL, query: query) else {
+            print("Invalid URL")
             throw APIError.invalidURL
         }
 
@@ -176,5 +173,22 @@ extension URLComponents {
         self.host = host
         self.path = path
         self.queryItems = queryItems
+    }
+}
+
+extension URL {
+    
+    static func constructURL(baseURL: String, query: String) -> URL? {
+        var components = URLComponents(string: baseURL)
+        components?.queryItems = [
+            URLQueryItem(name: "q", value: query),
+            URLQueryItem(name: "target", value: "index,stock,marketindicator")
+        ]
+        
+        // Manually replace the comma with %2C
+        let queryString = components?.percentEncodedQuery?.replacingOccurrences(of: ",", with: "%2C")
+        components?.percentEncodedQuery = queryString
+        
+        return components?.url
     }
 }

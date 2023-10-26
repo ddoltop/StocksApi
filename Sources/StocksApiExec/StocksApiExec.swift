@@ -92,7 +92,7 @@ struct StocksApiExec {
 
     static func apiTickers() async {
         do {
-            let companies = try await stocksApi.searchTickers(query: "sk")
+            let companies = try await stocksApi.searchTickers(query: "ㅅ")
             print(companies)
         } catch {
             print(error.localizedDescription)
