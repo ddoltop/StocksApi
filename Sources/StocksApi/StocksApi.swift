@@ -6,7 +6,7 @@ import Foundation
 public protocol IStockApi {
 //    func fetchChartData(tickerSymbol: String, range: ChartRange) async throws -> ChartData?   //Trade
 //    func fetchChartRawData(symbol: String, range: ChartRange) async throws -> (Data, URLResponse) //
-//    func searchTickers(query: String, isEquityTypeOnly: Bool) async throws -> [Ticker]  //Search Company
+    func searchTickers(query: String, isEquityTypeOnly: Bool) async throws -> [Ticker]  //Search Company
 //    func searchTickersRawData(symbols: String, isEquityTypeOnly: Bool) async throws -> (Data, URLResponse)
     func fetchQuotes(symbols: String) async throws -> [Quote] // Company Information
 //    func fetchQuotesRawData(code: String) async throws -> (Data, URLResponse)
