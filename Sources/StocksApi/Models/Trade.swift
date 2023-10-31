@@ -18,6 +18,9 @@ public struct ChartData {
 public struct Trade: Decodable {
 //    public let id = UUID()
     
+    public var timestamp: Date {
+        stringToDate(date)!
+    }
     public let date: String
     public let openPrice: Int
     public let highPrice: Int
@@ -46,7 +49,15 @@ public struct Trade: Decodable {
         closePrice = try container.decode(Int.self)
         volume = try container.decode(Int.self)
         foreignHoldingRate = try container.decode(Double.self)
+//        timestamp = stringToDate(date)!
     }
+    
+    func stringToDate(_ date: String) -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+        return dateFormatter.date(from: date)
+    }
+
 }
 
 
