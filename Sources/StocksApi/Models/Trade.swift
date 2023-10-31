@@ -9,6 +9,10 @@ import Foundation
 public struct ChartData {
 //    public let meta: ChartMeta
     public let data: [Trade]
+    
+    init(data: [Trade]) {
+        self.data = data
+    }
 }
 
 public struct Trade: Decodable {
