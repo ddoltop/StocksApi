@@ -87,6 +87,29 @@ public struct StocksApi: IStockApi {
         }
     }
     
+    public func fetchTrade(symbol: String, range: ChartRange) async throws -> ChartData {
+        var urlComponents = URLComponents(scheme: "https", host: "api.finance.naver.com", path: "/siseJson.naver")
+        // https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20230901&endTime=20231013&timeframe=day
+        // https://api.finance.naver.com/siseJson.naver?symbol=005930&startTime=20230901&endTime=20230913&timeframe=day"
+        // Set the query items for the URL
+        urlComponents.queryItems = [
+            .init(name: "symbol", value: symbol),
+            .init(name: "requestType", value: String(1)),
+            .init(name: "startTime", value: range.startTime),
+            .init(name: "endTime", value: range.endTime),
+            .init(name: "timeframe", value: range.intervalNaver),
+        ]
+        guard let url = urlComponents.url else {
+            throw APIError.invalidURL
+        }
+
+        let (response, statusCode): (TradeResponse, Int) = try await fetch(url: url, shouldReplace: true, "'", "\"")
+        if let error = response.error {
+            throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
+        }
+        return ChartData(data: response.datas)
+    }
+    
     public func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> ChartData {
         var urlComponents = URLComponents(scheme: "https", host: "api.finance.naver.com", path: "/siseJson.naver")
         // https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20230901&endTime=20231013&timeframe=day
