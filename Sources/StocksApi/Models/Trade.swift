@@ -10,7 +10,7 @@ public struct ChartData {
 //    public let meta: ChartMeta
     public let data: [Trade]
     
-    init(data: [Trade]) {
+    public init(data: [Trade]) {
         self.data = data
     }
 }
