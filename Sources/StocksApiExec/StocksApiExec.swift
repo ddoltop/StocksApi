@@ -16,11 +16,10 @@ struct StocksApiExec {
     static func main() async {
 //        await getQuoteDatas()
 //        await testQuoteDatas()
-        await apiTickers() // 회사 종합정보 복수가능
-
+        await apiQuoteDatas() // 회사 종합정보 복수가능
+        
 //        await apiTradeDatas() //거래 데이타 개별 검색
-//        await searchCompany() // 회사검색용 복수 검색
-//        await apiCompanyDatas()
+//        await apiTickers() // 회사검색
     }
     
     //parsing test  euc-kr encoding problem
@@ -39,7 +38,7 @@ struct StocksApiExec {
     //여러코드입력 -> 회사 종합정보
     static func apiQuoteDatas() async {
         do {
-            let quotes = try await stocksApi.fetchQuotes(symbols: "005930")
+            let quotes = try await stocksApi.fetchQuotes(symbols: "005930,258250")
             print(quotes)
         } catch {
             print(error.localizedDescription)

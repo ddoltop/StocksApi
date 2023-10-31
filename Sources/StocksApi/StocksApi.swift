@@ -10,6 +10,8 @@ public protocol IStockApi {
 //    func searchTickersRawData(symbols: String, isEquityTypeOnly: Bool) async throws -> (Data, URLResponse)
     func fetchQuotes(symbols: String) async throws -> [Quote] // Company Information
 //    func fetchQuotesRawData(code: String) async throws -> (Data, URLResponse)
+    func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Trade]
+
 }
 
 public struct StocksApi: IStockApi {
