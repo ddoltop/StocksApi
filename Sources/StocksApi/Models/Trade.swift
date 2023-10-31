@@ -6,6 +6,11 @@
 //
 import Foundation
 
+public struct ChartData {
+//    public let meta: ChartMeta
+    public let data: [Trade]
+}
+
 public struct Trade: Decodable {
 //    public let id = UUID()
     

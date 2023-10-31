@@ -10,7 +10,7 @@ public protocol IStockApi {
 //    func searchTickersRawData(symbols: String, isEquityTypeOnly: Bool) async throws -> (Data, URLResponse)
     func fetchQuotes(symbols: String) async throws -> [Quote] // Company Information
 //    func fetchQuotesRawData(code: String) async throws -> (Data, URLResponse)
-    func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Trade]
+    func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> ChartData
 
 }
 
@@ -87,7 +87,7 @@ public struct StocksApi: IStockApi {
         }
     }
     
-    public func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> [Trade] {
+    public func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> ChartData {
         var urlComponents = URLComponents(scheme: "https", host: "api.finance.naver.com", path: "/siseJson.naver")
         // https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20230901&endTime=20231013&timeframe=day
         // https://api.finance.naver.com/siseJson.naver?symbol=005930&startTime=20230901&endTime=20230913&timeframe=day"
@@ -107,7 +107,7 @@ public struct StocksApi: IStockApi {
         if let error = response.error {
             throw APIError.httpStatusCodeFailed(statusCode: statusCode, error: error)
         }
-        return response.datas
+        return ChartData(data: response.datas)
 
     }
     private func fetch<D: Decodable>(url: URL, shouldReplace: Bool = false, _ from: String = "", _ to: String = "") async throws -> (D, Int) {
