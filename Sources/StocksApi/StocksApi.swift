@@ -160,6 +160,7 @@ public struct StocksApi: IStockApi {
             }
             // convert '' to ""
             let str = stringData.replacingOccurrences(of: from, with: to)
+            print(str)
             guard  let data = str.data(using: .utf8) else {
                 throw APIError.parseError
             }

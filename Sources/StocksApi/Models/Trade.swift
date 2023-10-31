@@ -18,16 +18,16 @@ public struct ChartData {
 public struct Trade: Decodable {
 //    public let id = UUID()
     
-    public var timestamp: Date {
-        stringToDate(date)!
+    public var timestamp: Date? {
+        stringToDate(date)
     }
     public let date: String
-    public let openPrice: Int
-    public let highPrice: Int
-    public let lowPrice: Int
-    public let closePrice: Int
-    public let volume: Int
-    public let foreignHoldingRate: Double
+    public let openPrice: Int?
+    public let highPrice: Int?
+    public let lowPrice: Int?
+    public let closePrice: Int?
+    public let volume: Int?
+    public let foreignHoldingRate: Double?
 
     enum CodingKeys: Int, CodingKey {
         case date = 0
@@ -43,19 +43,19 @@ public struct Trade: Decodable {
         var container = try decoder.unkeyedContainer()
         
         date = try container.decode(String.self)
-        openPrice = try container.decode(Int.self)
-        highPrice = try container.decode(Int.self)
-        lowPrice = try container.decode(Int.self)
-        closePrice = try container.decode(Int.self)
-        volume = try container.decode(Int.self)
-        foreignHoldingRate = try container.decode(Double.self)
+        openPrice = try container.decodeIfPresent(Int.self)
+        highPrice = try container.decodeIfPresent(Int.self)
+        lowPrice = try container.decodeIfPresent(Int.self)
+        closePrice = try container.decodeIfPresent(Int.self)
+        volume = try container.decodeIfPresent(Int.self)
+        foreignHoldingRate = try container.decodeIfPresent(Double.self)
 //        timestamp = stringToDate(date)!
     }
     
-    func stringToDate(_ date: String) -> Date? {
+    func stringToDate(_ dateStr: String) -> Date? {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyyMMdd"
-        return dateFormatter.date(from: date)
+        dateFormatter.dateFormat = "yyyyMMddHHmm"
+        return dateFormatter.date(from: dateStr)
     }
 
 }

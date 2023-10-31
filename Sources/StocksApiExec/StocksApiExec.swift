@@ -16,7 +16,9 @@ struct StocksApiExec {
     static func main() async {
 //        await getQuoteDatas()
 //        await testQuoteDatas()
-        await apiQuoteDatas() // 회사 종합정보 복수가능
+//        await apiQuoteDatas() // 회사 종합정보 복수가능
+        
+        await apiChartDatas()
         
 //        await apiTradeDatas() //거래 데이타 개별 검색
 //        await apiTickers() // 회사검색
@@ -49,6 +51,16 @@ struct StocksApiExec {
     static func apiTradeDatas() async {
         do {
             let quotes = try await stocksApi.fetchTrade(symbol: "005930", startTime: "20230901", endTime: "20230913", timeframe: "day")
+            print(quotes)
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    //단일코드 거래내역
+    static func apiChartDatas() async {
+        do {
+            let quotes = try await stocksApi.fetchTrade(symbol: "005930", range: .oneDay)
             print(quotes)
         } catch {
             print(error.localizedDescription)
