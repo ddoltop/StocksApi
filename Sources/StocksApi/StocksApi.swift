@@ -11,7 +11,7 @@ public protocol IStockApi {
     func fetchQuotes(symbols: String) async throws -> [Quote] // Company Information
 //    func fetchQuotesRawData(code: String) async throws -> (Data, URLResponse)
     func fetchTrade(symbol: String, range: ChartRange) async throws -> ChartData
-//    func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> ChartData
+    func fetchTrade(symbol: String, startTime: String, endTime: String, timeframe: String) async throws -> ChartData
 
 }
 
