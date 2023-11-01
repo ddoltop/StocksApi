@@ -53,8 +53,17 @@ public struct Trade: Decodable {
     }
     
     func stringToDate(_ dateStr: String) -> Date? {
+        
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyyMMddHHmm"
+        if dateStr.count == 12 {
+            dateFormatter.dateFormat = "yyyyMMddHHmm"
+        } else if dateStr.count == 8 {
+            dateFormatter.dateFormat = "yyyyMMdd"
+        } else {
+            // Return nil if the format is unrecognized
+            return nil
+        }
+//        dateFormatter.dateFormat = "yyyyMMddHHmm"
         return dateFormatter.date(from: dateStr)
     }
 
